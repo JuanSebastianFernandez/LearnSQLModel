@@ -1,4 +1,4 @@
-from sqlmodel import Field, SQLModel, create_engine, Session
+from sqlmodel import Field, SQLModel, create_engine, Session, select, or_, col
 
 
 class Hero(SQLModel, table = True):
@@ -25,21 +25,79 @@ def create_heroes():
     hero_1 = Hero(name="Deadpond", secret_name="Dive Wilson")
     hero_2 = Hero(name="Spider-Boy", secret_name="Pedro Parqueador")
     hero_3 = Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48)
+    hero_4 = Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32)
+    hero_5 = Hero(name="Black Lion", secret_name="Trevor Challa", age=35)
+    hero_6 = Hero(name="Dr. Weird", secret_name="Steve Weird", age=36)
+    hero_7 = Hero(name="Captain North America", secret_name="Esteban Rogelios", age=93)
 
     with Session(engine) as session:
         session.add(hero_1)
         session.add(hero_2)
         session.add(hero_3)
+        session.add(hero_4)
+        session.add(hero_5)
+        session.add(hero_6)
+        session.add(hero_7)
 
-        session.commit()  # This will save the changes to the database
+        session.commit()    # This will commit the changes to the database, saving the heroes to the database
+    # print("Before interacting with the database")
+    # print("Hero 1:", hero_1)
+    # print("Hero 2:", hero_2)
+    # print("Hero 3:", hero_3)
 
+
+        # print("After adding to the session")
+        # print("Hero 1:", hero_1)
+        # print("Hero 2:", hero_2)
+        # print("Hero 3:", hero_3)
+
+        # print("After committing the session, show IDs")
+        # print("Hero 1 ID:", hero_1.id)
+        # print("Hero 2 ID:", hero_2.id)
+        # print("Hero 3 ID:", hero_3.id)
+
+        # print("After committing the session, show names")
+        # print("Hero 1 name:", hero_1.name)
+        # print("Hero 2 name:", hero_2.name)
+        # print("Hero 3 name:", hero_3.name)
+
+        session.refresh(hero_1)  # This will refresh the instance with the latest data from the database prbably you need to return it.
+        session.refresh(hero_2)
+        session.refresh(hero_3)
+
+    #     print("After refreshing the heroes")
+    #     print("Hero 1:", hero_1)
+    #     print("Hero 2:", hero_2)
+    #     print("Hero 3:", hero_3)
+    
+    # print("After the session closes")
+    # print("Hero 1:", hero_1)
+    # print("Hero 2:", hero_2)
+    # print("Hero 3:", hero_3)
     # session.close()  # This will close the session not necessary when using 'with' statement
+def select_heroes():
+    with Session(engine) as session:
+        #statement = select(Hero)        # It's equivalent to the SQL SELECT * FROM hero
+        statement = select(Hero).where(or_(col(Hero.age) >= 35, col(Hero.name).endswith("America")))    # This will select all heroes with the name "Deadpond"
+                                                                                                        # col is used to reference the columns of the table and don't allow SQL injection
+                                                                                                        # col avoids the interpeter to confuse between the Python variable and the SQL column name
+                                                                                                        # This is equivalent to the SQL: SELECT * FROM hero WHERE age >= 35 OR name LIKE '%America' 
+        results = session.exec(statement)
+        for hero in results:  # This will iterate over the results and print each hero
+            print(hero)
+        # heroes = results.all()            # This will get all the heroes from the database in list format
+        # print("Heroes in the database:")
+        # print(heroes)
+        
+
 
 def main():
     create_db_and_tables()  # This will create the database and tables if they do not exist
     print("Database and tables created successfully.")
     create_heroes()  # This will create some heroes in the database
     print("Heroes created successfully.")
+    select_heroes()  # This will select and print all heroes from the database
+    print("Heroes selected successfully.")
 
 if __name__ == "__main__":
     main()  # This will run the main function when the script is executed
