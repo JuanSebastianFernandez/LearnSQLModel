@@ -110,7 +110,17 @@ def update_heros():
         session.refresh(hero)  # This will refresh the instance with the latest data from the database
         print(f"Hero after refresh: {hero}")
 
-
+def delete_heroes():
+    with Session(engine) as session:
+        statement = select(Hero).where(Hero.name == "Spider-Boy")
+        results = session.exec(statement)
+        hero = results.one_or_none()
+        if hero:
+            session.delete(hero)
+            session.commit()
+            print(f"Hero {hero.name} deleted successfully.")
+        else:
+            print("Hero not found, nothing to delete.")     # For example when we said something like Spider-Boyy or Spider-Boy1 it will not find the hero and will not delete anything
 
 def main():
     create_db_and_tables()  # This will create the database and tables if they do not exist
@@ -121,6 +131,9 @@ def main():
     print("Heroes selected successfully.")
     update_heros()  # This will update the heroes in the database
     print("Heroes updated successfully.")
+    delete_heroes()  # This will delete the heroes in the database
+    print("Heroes deleted successfully.")
+
 
 if __name__ == "__main__":
     main()  # This will run the main function when the script is executed
