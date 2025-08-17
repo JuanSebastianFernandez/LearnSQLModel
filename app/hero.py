@@ -18,20 +18,22 @@ def create_heroes(heroes:list[Hero]):
 def select_heroes():
     with Session(engine) as session:
 
-        statement = select(Hero).where(col(Hero.age) > 32).offset(0).limit(2)     # This will select the first 3 heroes from the database, skipping the first 3 heroes 3 by 3 going through the list when we said
-                                                        # OFFSET 5 LIMIT 3 it means skip the first 5 and get the next 3 so it will return heroes with id 6,7 and 8 but now we don't have 8
-                                                        # Only heroes with id 6 and 7 will be returned
+        statement = select(Hero).where(Hero.name == "Deadpond")  # This will select all heroes and their associated teams
         results = session.exec(statement)
+        hero = results.one_or_none()
+        if hero:
+            print(f"Hero found: {hero.name}, Secret Name: {hero.secret_name}, Age: {hero.age}, Team ID: {hero.team_id}")
 
-        # hero = session.get(Hero, 100)  # This will get the hero with id 1 from the database, if it exists
-        #print(f"First Hero: {results.first()}") # This will print the first hero from the results
-        # print(f"One Hero: {results.one()}") # This will print one hero from the results, if there are multiple heroes it will raise an error
-        # for hero in results:  # This will iterate over the results and print each hero
-        #     print(hero)
-        heroes = results.all()            # This will get all the heroes from the database in list format
-        # print("Heroes in the database:")
-        print(heroes)
-        
+def select_heros_and_team_names():
+    with Session(engine) as session:
+        # statement = select(Hero.id, Hero.name, Team.name).join(Team, onclause=(col(Hero.team_id) == col(Team.id))).where(col(Team.id) > 1)  # a way to do it using col
+        statement = select(Hero, Team).join(Team, isouter=True)# This will join the Hero and Team tables on the team_id foreign key, is outer is equal to LEF OUTER
+        results = session.exec(statement)
+        # print(results.all())  # This will print all heroes and their associated team names
+        for hero, team in results:
+            print(f"Hero: {hero.name}, Team: {team.name if team else 'No Team'}")
+
+
 def update_heros():
     with Session(engine) as session:
         statement = select(Hero).where(Hero.name == "Spider-Boy")
@@ -44,6 +46,19 @@ def update_heros():
         session.commit()  # This will commit the changes to the database, updating the hero's
         session.refresh(hero)  # This will refresh the instance with the latest data from the database
         print(f"Hero after refresh: {hero}")
+
+def update_heros_team(hero_name: str, new_team_id: int|None):
+    with Session(engine) as session:
+        statement = select(Hero).where(Hero.name == hero_name)
+        results = session.exec(statement)
+        hero = results.one_or_none()
+        if hero:
+            print(f"Hero before update: {hero}")
+            hero.team_id = new_team_id
+            session.add(hero)
+            session.commit()
+            session.refresh(hero)  # This will refresh the instance with the latest data from the database
+            print(f"Hero after update: {hero}")
 
 def delete_heroes():
     with Session(engine) as session:
@@ -94,10 +109,16 @@ def main():
     print("Heroes created successfully.")
     select_heroes()  # This will select and print all heroes from the database
     print("Heroes selected successfully.")
-    update_heros()  # This will update the heroes in the database
-    print("Heroes updated successfully.")
-    delete_heroes()  # This will delete the heroes in the database
-    print("Heroes deleted successfully.")
+    # update_heros()  # This will update the heroes in the database
+    # print("Heroes updated successfully.")
+    # delete_heroes()  # This will delete the heroes in the database
+    # print("Heroes deleted successfully.")
+    select_heros_and_team_names()  # This will select and print all heroes and their associated team names from the database
+    print("Heroes and their team names selected successfully.")
+    update_heros_team("Captain North America", teams[0].id)  # This will update the team of Captain North America to the first team
+    # In the time captain America decides to get out of the team, we can set the team_id to None
+    update_heros_team("Captain North America", None)  # This will update the team of Captain North America to None
+    print("Heroes team updated successfully.")
 
 
 if __name__ == "__main__":
