@@ -1,25 +1,12 @@
 from sqlmodel import Session, select, or_, col, delete
 from app.models.basemodels import Team, Hero, engine, create_db_and_tables
 
-teams = [
-    Team(name="Preventers", headquarters="Sharp Tower"), 
-    Team(name="Z-Force", headquarters="Sister Margaret's Bar")
-    ]
-
-heroes = [
-    Hero(name="Deadpond", secret_name="Dive Wilson", team_id=teams[1].id if teams else None),  # If teams is not None, assign the id of the first team to team_id, otherwise assign None
-    Hero(name="Spider-Boy", secret_name="Pedro Parqueador", team_id=teams[0].id if teams else None),  # If teams is not None, assign the id of the second team to team_id, otherwise assign None
-    Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48, team_id=teams[0].id if teams else None), # If teams is not None, assign the id of the first team to team_id, otherwise assign None
-    Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32, team_id=teams[1].id if teams else None),
-    Hero(name="Black Lion", secret_name="Trevor Challa", age=35, team_id=teams[1].id if teams else None),
-    Hero(name="Dr. Weird", secret_name="Steve Weird", age=36, team_id=teams[1].id if teams else None),
-    Hero(name="Captain North America", secret_name="Esteban Rogelios", age=93)
-    ]
-
 def create_teams(teams: list[Team]):
     with Session(engine) as session:
         session.add_all(teams)  # This will add both teams to the session
         session.commit()  # This will commit the changes to the database, saving the teams to the database
+        for team in teams:
+            session.refresh(team)
     return teams
 
 def create_heroes(heroes:list[Hero]):
@@ -69,6 +56,7 @@ def delete_heroes():
             print(f"Hero {hero.name} deleted successfully.")
         else:
             print("Hero not found, nothing to delete.")     # For example when we said something like Spider-Boyy or Spider-Boy1 it will not find the hero and will not delete anything
+            
 def clear_tables():
     with Session(engine) as session:
         statement = delete(Hero)  # This will delete all heroes from the database
@@ -80,11 +68,27 @@ def clear_tables():
 def main():
     create_db_and_tables()  # This will create the database and tables if they do not exist
     clear_tables()  # This will clear the tables before creating new teams and heroes
-    print("Tables dropped successfully.")
+    print("Tables cleaned successfully.")
     print("Starting to create teams and heroes...")
+
+    teams = [
+    Team(name="Preventers", headquarters="Sharp Tower"), 
+    Team(name="Z-Force", headquarters="Sister Margaret's Bar")
+    ]
+
     create_teams(teams)  # This will create some teams in the database
     print("Teams created successfully.")
-    print(teams)
+
+    heroes = [
+    Hero(name="Deadpond", secret_name="Dive Wilson", team_id=teams[1].id if teams else None),  # If teams is not None, assign the id of the first team to team_id, otherwise assign None
+    Hero(name="Spider-Boy", secret_name="Pedro Parqueador", team_id=teams[0].id if teams else None),  # If teams is not None, assign the id of the second team to team_id, otherwise assign None
+    Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48, team_id=teams[0].id if teams else None), # If teams is not None, assign the id of the first team to team_id, otherwise assign None
+    Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32, team_id=teams[1].id if teams else None),
+    Hero(name="Black Lion", secret_name="Trevor Challa", age=35, team_id=teams[1].id if teams else None),
+    Hero(name="Dr. Weird", secret_name="Steve Weird", age=36, team_id=teams[1].id if teams else None),
+    Hero(name="Captain North America", secret_name="Esteban Rogelios", age=93)
+    ]
+
     print("Starting to create heroes...")
     create_heroes(heroes)  # This will create some heroes in the database
     print("Heroes created successfully.")
