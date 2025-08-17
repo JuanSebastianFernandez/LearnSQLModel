@@ -47,14 +47,14 @@ def update_heros():
         session.refresh(hero)  # This will refresh the instance with the latest data from the database
         print(f"Hero after refresh: {hero}")
 
-def update_heros_team(hero_name: str, new_team_id: int|None):
+def update_heros_team(hero_name: str, new_team: Team | None):
     with Session(engine) as session:
         statement = select(Hero).where(Hero.name == hero_name)
         results = session.exec(statement)
         hero = results.one_or_none()
         if hero:
             print(f"Hero before update: {hero}")
-            hero.team_id = new_team_id
+            hero.team = new_team
             session.add(hero)
             session.commit()
             session.refresh(hero)  # This will refresh the instance with the latest data from the database
@@ -80,6 +80,30 @@ def clear_tables():
         session.execute(statement)  # This will execute the delete statement
         session.commit()
 
+def add_hero_to_team(hero_name:str, team_name: str):
+    with Session(engine) as session:
+        # Obtain the hero from the database
+        hero_statement = select(Hero).where(Hero.name == hero_name)
+        hero = session.exec(hero_statement).one()
+
+        # Obtain the team from the database
+        team_statement = select(Team).where(Team.name == team_name)
+        team = session.exec(team_statement).one()
+
+        # Add hero to team
+        team.heroes.append(hero)  # This will add the hero to the team's heroes list
+        session.add(team)  # This will add the team to the session
+        session.commit()
+        session.refresh(team)  # This will refresh the team instance with the latest data from the database
+
+def delete_team():
+    with Session(engine) as session:
+        statement = select(Team).where(Team.name == "Z-Force")
+        team = session.exec(statement).one()
+        session.delete(team)  # This will delete the team and all associated heroes due to cascade_delete=True
+        session.commit()
+        print(f"Team {team.name} deleted successfully, along with all associated heroes.")
+
 def main():
     create_db_and_tables()  # This will create the database and tables if they do not exist
     clear_tables()  # This will clear the tables before creating new teams and heroes
@@ -95,12 +119,12 @@ def main():
     print("Teams created successfully.")
 
     heroes = [
-    Hero(name="Deadpond", secret_name="Dive Wilson", team_id=teams[1].id if teams else None),  # If teams is not None, assign the id of the first team to team_id, otherwise assign None
-    Hero(name="Spider-Boy", secret_name="Pedro Parqueador", team_id=teams[0].id if teams else None),  # If teams is not None, assign the id of the second team to team_id, otherwise assign None
-    Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48, team_id=teams[0].id if teams else None), # If teams is not None, assign the id of the first team to team_id, otherwise assign None
-    Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32, team_id=teams[1].id if teams else None),
-    Hero(name="Black Lion", secret_name="Trevor Challa", age=35, team_id=teams[1].id if teams else None),
-    Hero(name="Dr. Weird", secret_name="Steve Weird", age=36, team_id=teams[1].id if teams else None),
+    Hero(name="Deadpond", secret_name="Dive Wilson", team=teams[0]),  # If teams is not None, assign the id of the first team to team_id, otherwise assign None
+    Hero(name="Spider-Boy", secret_name="Pedro Parqueador", team=teams[0]),  # If teams is not None, assign the id of the second team to team_id, otherwise assign None
+    Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48, team=teams[1]), # If teams is not None, assign the id of the first team to team_id, otherwise assign None
+    Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32, team=teams[1]),
+    Hero(name="Black Lion", secret_name="Trevor Challa", age=35, team=teams[0]),
+    Hero(name="Dr. Weird", secret_name="Steve Weird", age=36, team=teams[1]),
     Hero(name="Captain North America", secret_name="Esteban Rogelios", age=93)
     ]
 
@@ -115,10 +139,14 @@ def main():
     # print("Heroes deleted successfully.")
     select_heros_and_team_names()  # This will select and print all heroes and their associated team names from the database
     print("Heroes and their team names selected successfully.")
-    update_heros_team("Captain North America", teams[0].id)  # This will update the team of Captain North America to the first team
+    update_heros_team("Captain North America", teams[0])  # This will update the team of Captain North America to the first team
     # In the time captain America decides to get out of the team, we can set the team_id to None
     update_heros_team("Captain North America", None)  # This will update the team of Captain North America to None
     print("Heroes team updated successfully.")
+    # Now Captain North America is not part of any team, so we can add him to a team later if we want
+    add_hero_to_team("Captain North America", "Z-Force")  # This will add Captain North America to the Z-Force team
+    print("Captain North America added to Z-Force team successfully.")
+    delete_team()  # This will delete the Z-Force team and all associated heroes
 
 
 if __name__ == "__main__":
