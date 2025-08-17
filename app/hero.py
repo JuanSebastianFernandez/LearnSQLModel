@@ -3,9 +3,9 @@ from sqlmodel import Field, SQLModel, create_engine, Session, select, or_, col
 
 class Hero(SQLModel, table = True):
     id: int | None = Field(default=None, primary_key=True)
-    name: str
+    name: str = Field(index=True)  # index=True will create an index on the name column for faster queries
     secret_name: str
-    age: int | None = None
+    age: int | None = Field(default=None, index=True)  # age is optional, so it can be None
 
 # Create an SQLite database engine
 sqlite_file_name = "database.db"
@@ -83,8 +83,12 @@ def select_heroes():
                                                                                                         # col avoids the interpeter to confuse between the Python variable and the SQL column name
                                                                                                         # This is equivalent to the SQL: SELECT * FROM hero WHERE age >= 35 OR name LIKE '%America' 
         results = session.exec(statement)
-        for hero in results:  # This will iterate over the results and print each hero
-            print(hero)
+        hero = session.get(Hero, 100)  # This will get the hero with id 1 from the database, if it exists
+        print(hero)
+        #print(f"First Hero: {results.first()}") # This will print the first hero from the results
+        # print(f"One Hero: {results.one()}") # This will print one hero from the results, if there are multiple heroes it will raise an error
+        # for hero in results:  # This will iterate over the results and print each hero
+        #     print(hero)
         # heroes = results.all()            # This will get all the heroes from the database in list format
         # print("Heroes in the database:")
         # print(heroes)
