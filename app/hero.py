@@ -78,20 +78,23 @@ def create_heroes():
 def select_heroes():
     with Session(engine) as session:
         #statement = select(Hero)        # It's equivalent to the SQL SELECT * FROM hero
-        statement = select(Hero).where(or_(col(Hero.age) >= 35, col(Hero.name).endswith("America")))    # This will select all heroes with the name "Deadpond"
+        # statement = select(Hero).where(or_(col(Hero.age) >= 35, col(Hero.name).endswith("America")))    # This will select all heroes with the name "Deadpond"
                                                                                                         # col is used to reference the columns of the table and don't allow SQL injection
                                                                                                         # col avoids the interpeter to confuse between the Python variable and the SQL column name
                                                                                                         # This is equivalent to the SQL: SELECT * FROM hero WHERE age >= 35 OR name LIKE '%America' 
+        statement = select(Hero).where(col(Hero.age) > 32).offset(0).limit(2)     # This will select the first 3 heroes from the database, skipping the first 3 heroes 3 by 3 going through the list when we said
+                                                        # OFFSET 5 LIMIT 3 it means skip the first 5 and get the next 3 so it will return heroes with id 6,7 and 8 but now we don't have 8
+                                                        # Only heroes with id 6 and 7 will be returned
         results = session.exec(statement)
-        hero = session.get(Hero, 100)  # This will get the hero with id 1 from the database, if it exists
-        print(hero)
+
+        # hero = session.get(Hero, 100)  # This will get the hero with id 1 from the database, if it exists
         #print(f"First Hero: {results.first()}") # This will print the first hero from the results
         # print(f"One Hero: {results.one()}") # This will print one hero from the results, if there are multiple heroes it will raise an error
         # for hero in results:  # This will iterate over the results and print each hero
         #     print(hero)
-        # heroes = results.all()            # This will get all the heroes from the database in list format
+        heroes = results.all()            # This will get all the heroes from the database in list format
         # print("Heroes in the database:")
-        # print(heroes)
+        print(heroes)
         
 
 
