@@ -96,6 +96,20 @@ def select_heroes():
         # print("Heroes in the database:")
         print(heroes)
         
+def update_heros():
+    with Session(engine) as session:
+        statement = select(Hero).where(Hero.name == "Spider-Boy")
+        results = session.exec(statement)
+        hero = results.one()
+        print(f"Hero before update: {hero}")
+        print(type(hero))
+        hero.age = 16
+        print(f"Hero after update: {hero}")
+        session.add(hero)
+        session.commit()  # This will commit the changes to the database, updating the hero's
+        session.refresh(hero)  # This will refresh the instance with the latest data from the database
+        print(f"Hero after refresh: {hero}")
+
 
 
 def main():
@@ -105,6 +119,8 @@ def main():
     print("Heroes created successfully.")
     select_heroes()  # This will select and print all heroes from the database
     print("Heroes selected successfully.")
+    update_heros()  # This will update the heroes in the database
+    print("Heroes updated successfully.")
 
 if __name__ == "__main__":
     main()  # This will run the main function when the script is executed
