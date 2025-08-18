@@ -1,5 +1,7 @@
 from sqlmodel import Session, select, or_, col, delete
-from app.models.basemodels import Team, Hero, engine, create_db_and_tables
+from app.models.hero_model import Hero
+from app.models.team_model import Team
+from db.database import engine, create_db_and_tables
 
 def create_teams(teams: list[Team]):
     with Session(engine) as session:
@@ -119,12 +121,12 @@ def main():
     print("Teams created successfully.")
 
     heroes_data = [
-    Hero(name="Deadpond", secret_name="Dive Wilson", teams=[teams_data[0], teams_data[1]]),  # If teams is not None, assign the id of the first team to team_id, otherwise assign None
-    Hero(name="Spider-Boy", secret_name="Pedro Parqueador", teams=[teams_data[0]]),  # If teams is not None, assign the id of the second team to team_id, otherwise assign None
-    Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48, teams=[teams_data[1]]), # If teams is not None, assign the id of the first team to team_id, otherwise assign None
-    Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32, teams=[teams_data[0]]),
-    Hero(name="Black Lion", secret_name="Trevor Challa", age=35, teams=[teams_data[1]]),
-    Hero(name="Dr. Weird", secret_name="Steve Weird", age=36, teams=[teams_data[0]]),
+    Hero(name="Deadpond", secret_name="Dive Wilson", team=teams_data[0]),  # If teams is not None, assign the id of the first team to team_id, otherwise assign None
+    Hero(name="Spider-Boy", secret_name="Pedro Parqueador", team=teams_data[0]),  # If teams is not None, assign the id of the second team to team_id, otherwise assign None
+    Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48, team=teams_data[1]), # If teams is not None, assign the id of the first team to team_id, otherwise assign None
+    Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32, team=teams_data[0]),
+    Hero(name="Black Lion", secret_name="Trevor Challa", age=35, team=teams_data[1]),
+    Hero(name="Dr. Weird", secret_name="Steve Weird", age=36, team=teams_data[0]),
     Hero(name="Captain North America", secret_name="Esteban Rogelios", age=93)
     ]
 
