@@ -22,7 +22,7 @@ def select_heroes():
         results = session.exec(statement)
         hero = results.one_or_none()
         if hero:
-            print(f"Hero found: {hero.name}, Secret Name: {hero.secret_name}, Age: {hero.age}, Team ID: {hero.team_id}")
+            print(f"Hero found: {hero.name}, Secret Name: {hero.secret_name}, Age: {hero.age}")
 
 def select_heros_and_team_names():
     with Session(engine) as session:
@@ -110,43 +110,43 @@ def main():
     print("Tables cleaned successfully.")
     print("Starting to create teams and heroes...")
 
-    teams = [
+    teams_data = [
     Team(name="Preventers", headquarters="Sharp Tower"), 
     Team(name="Z-Force", headquarters="Sister Margaret's Bar")
     ]
 
-    create_teams(teams)  # This will create some teams in the database
+    create_teams(teams_data)  # This will create some teams in the database
     print("Teams created successfully.")
 
-    heroes = [
-    Hero(name="Deadpond", secret_name="Dive Wilson", team=teams[0]),  # If teams is not None, assign the id of the first team to team_id, otherwise assign None
-    Hero(name="Spider-Boy", secret_name="Pedro Parqueador", team=teams[0]),  # If teams is not None, assign the id of the second team to team_id, otherwise assign None
-    Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48, team=teams[1]), # If teams is not None, assign the id of the first team to team_id, otherwise assign None
-    Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32, team=teams[1]),
-    Hero(name="Black Lion", secret_name="Trevor Challa", age=35, team=teams[0]),
-    Hero(name="Dr. Weird", secret_name="Steve Weird", age=36, team=teams[1]),
+    heroes_data = [
+    Hero(name="Deadpond", secret_name="Dive Wilson", teams=[teams_data[0], teams_data[1]]),  # If teams is not None, assign the id of the first team to team_id, otherwise assign None
+    Hero(name="Spider-Boy", secret_name="Pedro Parqueador", teams=[teams_data[0]]),  # If teams is not None, assign the id of the second team to team_id, otherwise assign None
+    Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48, teams=[teams_data[1]]), # If teams is not None, assign the id of the first team to team_id, otherwise assign None
+    Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32, teams=[teams_data[0]]),
+    Hero(name="Black Lion", secret_name="Trevor Challa", age=35, teams=[teams_data[1]]),
+    Hero(name="Dr. Weird", secret_name="Steve Weird", age=36, teams=[teams_data[0]]),
     Hero(name="Captain North America", secret_name="Esteban Rogelios", age=93)
     ]
 
     print("Starting to create heroes...")
-    create_heroes(heroes)  # This will create some heroes in the database
+    create_heroes(heroes_data)  # This will create some heroes in the database
     print("Heroes created successfully.")
-    select_heroes()  # This will select and print all heroes from the database
-    print("Heroes selected successfully.")
+    # select_heroes()  # This will select and print all heroes from the database
+    # print("Heroes selected successfully.")
     # update_heros()  # This will update the heroes in the database
     # print("Heroes updated successfully.")
     # delete_heroes()  # This will delete the heroes in the database
     # print("Heroes deleted successfully.")
-    select_heros_and_team_names()  # This will select and print all heroes and their associated team names from the database
-    print("Heroes and their team names selected successfully.")
-    update_heros_team("Captain North America", teams[0])  # This will update the team of Captain North America to the first team
-    # In the time captain America decides to get out of the team, we can set the team_id to None
-    update_heros_team("Captain North America", None)  # This will update the team of Captain North America to None
-    print("Heroes team updated successfully.")
-    # Now Captain North America is not part of any team, so we can add him to a team later if we want
-    add_hero_to_team("Captain North America", "Z-Force")  # This will add Captain North America to the Z-Force team
-    print("Captain North America added to Z-Force team successfully.")
-    delete_team()  # This will delete the Z-Force team and all associated heroes
+    # select_heros_and_team_names()  # This will select and print all heroes and their associated team names from the database
+    # print("Heroes and their team names selected successfully.")
+    # update_heros_team("Captain North America", teams_data[0])  # This will update the team of Captain North America to the first team
+    # # In the time captain America decides to get out of the team, we can set the team_id to None
+    # update_heros_team("Captain North America", None)  # This will update the team of Captain North America to None
+    # print("Heroes team updated successfully.")
+    # # Now Captain North America is not part of any team, so we can add him to a team later if we want
+    # add_hero_to_team("Captain North America", "Z-Force")  # This will add Captain North America to the Z-Force team
+    # print("Captain North America added to Z-Force team successfully.")
+    # delete_team()  # This will delete the Z-Force team and all associated heroes
 
 
 if __name__ == "__main__":

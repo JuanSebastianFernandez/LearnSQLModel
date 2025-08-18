@@ -1,22 +1,26 @@
 from sqlmodel import SQLModel, Field, create_engine, Relationship
 
+class HeroTeamLink(SQLModel, table=True):
+    team_id: int | None = Field(default=None, foreign_key="team.id", primary_key=True)
+    hero_id: int | None = Field(default=None, foreign_key="hero.id", primary_key=True)
+
 class Team(SQLModel, table = True):
     id: int |None = Field(default=None, primary_key=True)
     name: str = Field(index=True)
     headquarters: str
 
-    heroes: list["Hero"] = Relationship(back_populates="team", cascade_delete=True)     # This will create a one-to-many relationship with the Hero table
-                                                                                        # cascade_delete=True will delete all heroes associated with the team when the team is deleted
+    heroes: list["Hero"] = Relationship(back_populates="teams", link_model=HeroTeamLink)        # This will create a one-to-many relationship with the Hero table
+                                                                                                                    # cascade_delete=True will delete all heroes associated with the team when the team is deleted
 
 class Hero(SQLModel, table = True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True)  # index=True will create an index on the name column for faster queries
     secret_name: str
     age: int | None = Field(default=None, index=True)  # age is optional, so it can be None
-    team_id: int | None = Field(default=None, foreign_key="team.id", ondelete = "SET NULL")  # This will create a foreign key relationship with the Team table
+    # team_id: int | None = Field(default=None, foreign_key="team.id", ondelete = "SET NULL")  # This will create a foreign key relationship with the Team table
     # ondelete = "SET NULL" means that when the team is deleted, the team_id in the Hero table will be set to NULL but only when someone delet here in sql command
     # directly on the database, not when we delete the team using SQLModel, because SQLModel will delete all heroes associated with the team due to cascade_delete=True                              
-    team: Team | None = Relationship(back_populates="heroes")  # This will create a many-to-one relationship with the Team table
+    teams: list["Team"] = Relationship(back_populates="heroes", link_model=HeroTeamLink)  # This will create a many-to-one relationship with the Team table
 # When we declare a model with SQLModel, with the table = True argument, it means that this model will be used to create a table in the database. 
 # Because of this, we can use the SQLModel.metadata.create_all(engine) method to create the table in the database.
 
